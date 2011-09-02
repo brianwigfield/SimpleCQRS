@@ -97,10 +97,12 @@ namespace SimpleCqrs
         protected virtual IEventBus GetEventBus(IServiceLocator serviceLocator)
         {
             var typeCatalog = serviceLocator.Resolve<ITypeCatalog>();
-            var domainEventHandlerFactory = serviceLocator.Resolve<DomainEventHandlerFactory>();
-            var domainEventTypes = typeCatalog.GetGenericInterfaceImplementations(typeof(IHandleDomainEvents<>));
 
-            return new LocalEventBus(domainEventTypes, domainEventHandlerFactory);
+            return new LocalEventBus(
+                typeCatalog.GetGenericInterfaceImplementations(typeof(IHandleDomainEvents<>)), 
+                serviceLocator.Resolve<DomainEventHandlerFactory>(), 
+                typeCatalog.GetGenericInterfaceImplementations(typeof (IEventConverter<,>)), 
+                serviceLocator.Resolve<DomainEventConverterFactory>());
         }
 
         /// <summary>

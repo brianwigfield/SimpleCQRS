@@ -9,4 +9,5 @@ namespace SimpleCqrs.Eventing
         public int Sequence { get; set; }
         public DateTime EventDate { get; set; }
     }
+
 }

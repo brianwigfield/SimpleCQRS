@@ -7,16 +7,25 @@ namespace SimpleCqrs.Eventing
     public class LocalEventBus : IEventBus
     {
         private readonly IDomainEventHandlerFactory eventHandlerBuilder;
+        readonly IEnumerable<Type> eventConverterTypes;
+        readonly IDomainEventConverterFactory eventConverterFactory;
         private IDictionary<Type, EventHandlerInvoker> eventHandlerInvokers;
+        private readonly IDictionary<Type, Type> eventConverters;
 
-        public LocalEventBus(IEnumerable<Type> eventHandlerTypes, IDomainEventHandlerFactory eventHandlerBuilder)
+        public LocalEventBus(IEnumerable<Type> eventHandlerTypes, IDomainEventHandlerFactory eventHandlerBuilder, IEnumerable<Type> eventConverterTypes, IDomainEventConverterFactory eventConverterFactory)
         {
             this.eventHandlerBuilder = eventHandlerBuilder;
+            this.eventConverterTypes = eventConverterTypes;
+            this.eventConverterFactory = eventConverterFactory;
             BuildEventInvokers(eventHandlerTypes);
+            eventConverters = GetDomainEventConverters();
         }
 
         public void PublishEvent(DomainEvent domainEvent)
         {
+            while (eventConverters.ContainsKey(domainEvent.GetType()))
+                domainEvent = ((dynamic)eventConverterFactory.Create(eventConverters[domainEvent.GetType()])).Convert((dynamic)domainEvent);                
+
             if(!eventHandlerInvokers.ContainsKey(domainEvent.GetType())) return;
 
             var eventHandlerInvoker = eventHandlerInvokers[domainEvent.GetType()];
@@ -51,6 +60,16 @@ namespace SimpleCqrs.Eventing
             return from interfaceType in eventHandlerType.GetInterfaces()
                    where interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IHandleDomainEvents<>)
                    select interfaceType.GetGenericArguments()[0];
+        }
+
+        private IDictionary<Type, Type> GetDomainEventConverters()
+        {
+            return eventConverterTypes
+                .SelectMany(type => 
+                    type.GetInterfaces()
+                        .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof (IEventConverter<,>))
+                        .Select(i => new KeyValuePair<Type, Type>(i.GetGenericArguments()[0], type)))
+                .ToDictionary(_ => _.Key, _ => _.Value);
         }
 
         private class EventHandlerInvoker

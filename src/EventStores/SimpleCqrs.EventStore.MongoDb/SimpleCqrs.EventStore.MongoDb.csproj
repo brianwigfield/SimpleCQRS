@@ -45,6 +45,7 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DomainEventMapper.cs" />
     <Compile Include="MongoEventStore.cs" />
     <Compile Include="MongoSnapshotStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

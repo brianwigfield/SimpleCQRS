@@ -62,6 +62,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Domain\EntityCollection.cs" />
+    <Compile Include="Eventing\DomainEventConverterFactor.cs" />
+    <Compile Include="Eventing\IDomainEventConverterFactory.cs" />
+    <Compile Include="Eventing\IEventConvertor.cs" />
     <Compile Include="IHaveATestMode.cs" />
     <Compile Include="Domain\IDomainRepository.cs">
       <SubType>Code</SubType>

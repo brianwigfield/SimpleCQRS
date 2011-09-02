@@ -62,9 +62,7 @@ namespace SimpleCqrs.Domain
                                                          BindingFlags.NonPublic, null, new[] {domainEventType}, null);
 
             if(methodInfo != null && EventHandlerMethodInfoHasCorrectParameter(methodInfo, domainEventType))
-            {
                 methodInfo.Invoke(this, new[] {domainEvent});
-            }
 
             ApplyEventToEntities(domainEvent);
         }
@@ -74,10 +72,8 @@ namespace SimpleCqrs.Domain
             var entityDomainEvent = domainEvent as EntityDomainEvent;
             if (entityDomainEvent == null) return;
 
-            var list = entities
-                .Where(entity => entity.Id == entityDomainEvent.EntityId).ToList();
-            list
-                .ForEach(entity => entity.ApplyHistoricalEvents(entityDomainEvent));
+            entities.Where(entity => entity.Id == entityDomainEvent.EntityId).ToList()
+                    .ForEach(entity => entity.ApplyHistoricalEvents(entityDomainEvent));
         }
 
         private static string GetEventHandlerMethodName(string domainEventTypeName)
