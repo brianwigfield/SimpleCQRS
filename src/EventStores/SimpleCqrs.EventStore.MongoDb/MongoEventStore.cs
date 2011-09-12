@@ -21,7 +21,8 @@ namespace SimpleCqrs.EventStore.MongoDb
             typeCatalog.GetDerivedTypes(typeof(DomainEvent)).ToList().
                 ForEach(x => BsonClassMap.RegisterClassMap(new DomainEventMapper(x, _eventHashRef)));
 
-            _collection = MongoServer.Create(connectionString).GetDatabase("events").GetCollection<DomainEvent>("events");
+            var connection = new MongoUrlBuilder(connectionString);
+            _collection = MongoServer.Create(connection.ToMongoUrl()).GetDatabase(connection.DatabaseName).GetCollection<DomainEvent>("events");
         }
 
         public IEnumerable<DomainEvent> GetEvents(Guid aggregateRootId, int startSequence)
